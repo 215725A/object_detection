@@ -7,3 +7,4 @@ memo/
 outputs/
 ver2/config/yolov9_blur.yml
 ver2/config/yolov9.yml
+ver2/config/yolov9_multi.yml
