@@ -10,6 +10,7 @@ class VideoDetector:
         try:
             detected = self.model(frame)
             boxes = detected[0].boxes
+            human_count = 0
 
             for box in boxes:
                 cls = box.cls
@@ -18,6 +19,9 @@ class VideoDetector:
 
                 if self.model.names[int(cls)] == 'person' and conf >= 0.5:
                     frame = self.drawRectAngle(frame, conf, xyxy)
+                    human_count += 1
+            
+            frame = self.drawInfo(frame, human_count)
 
             return frame
 
@@ -30,7 +34,7 @@ class VideoDetector:
             label = f'person: {_conf:.2f}'
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv2.putText(frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
             center = ((x1+x2) // 2, (y1+y2) // 2)
             frame = self.drawCenterPoint(frame, center)
@@ -40,4 +44,10 @@ class VideoDetector:
     def drawCenterPoint(self, frame, center):
         frame = cv2.circle(frame, center, 2, (0, 255, 0), 3)
         
+        return frame
+
+    def drawInfo(self, frame, human_count):
+        text = f"Human: {human_count}"
+        cv2.putText(frame, text, (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
         return frame
