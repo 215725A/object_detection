@@ -1,4 +1,9 @@
+# About model
 model: # ptファイルへのpath
+
+# About videos
 video_path: # 使う動画へのパス
 video_output_path: # 出力先のパス
+
+# About process
 process_num: # プロセス数

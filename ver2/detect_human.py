@@ -6,9 +6,9 @@ import argparse
 import time
 from multiprocessing import Process, Queue
 
-# Self-made Libraries
+# Original Sources
 import util.app as app
-from util.yaml import read
+from util.setup import load_settings, set_up_cap, set_up_queue, set_up_writer
 
 
 def process_detector(frame_queue, result_queue, model_path):
@@ -19,42 +19,9 @@ def process_detector(frame_queue, result_queue, model_path):
             break
 
         result = detector.detectHuman(frame)
-        result_queue.put((frame_number, result))
+        result_queue.put((frame_number, result)) 
 
-def load_settings(config_path):
-    config = read(config_path)
-    process_num = config['process_num']
-    model_path = config['model']
-    video_path = config['video_path']
-    output_path = config['video_output_path']
-
-    return process_num, model_path, video_path, output_path
-
-def setUpCap(video_path):
-    cap = cv2.VideoCapture(video_path)
-    if not cap.isOpened():
-        raise ValueError("""
-                             VideoCapture not opened. \n
-                             Check if the 'movie_path' is correct and ffmpeg or gstreamer is properly installed.
-                            """
-        )
-
-    return cap
-
-def setUpQueue():
-    frame_queue = Queue()
-    result_queue = Queue()
-    return frame_queue, result_queue
-
-def setUpWriter(cap, output_path):
-    cap_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    cap_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    writer = cv2.VideoWriter(output_path, fourcc, fps, (cap_width, cap_height))
-    return writer
-
-def saveVideo(writer, results):
+def save_video(writer, results):
     if results:
         for frame in results:
             writer.write(frame)
@@ -63,13 +30,13 @@ def saveVideo(writer, results):
 def main(config_path):
     start = time.perf_counter()
 
-    # Settings
-    process_num, model_path, video_path, output_path = load_settings(config_path)
+    # Load Settings
+    model_path, video_path, output_path, process_num = load_settings(config_path)
 
     # Setup
-    cap = setUpCap(video_path)
-    frame_queue, result_queue = setUpQueue()
-    writer = setUpWriter(cap, output_path)
+    cap = set_up_cap(video_path)
+    frame_queue, result_queue = set_up_queue()
+    writer = set_up_writer(cap, output_path)
 
     # Setup Workers
     detectors = [
@@ -101,10 +68,11 @@ def main(config_path):
     
     cap.release()
 
-    saveVideo(writer, results)
+    save_video(writer, results)
 
     end = time.perf_counter()
     print(f"実行時間: {end - start:.2f}s")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
