@@ -58,17 +58,18 @@ def main(config_path):
     for _ in detectors:
         frame_queue.put((None, None))
     
-    results = [None] * frame_number
+    frames = [None] * frame_number
     for _ in range(frame_number):
         frame_number, result = result_queue.get()
-        results[frame_number] = result
+        frames[frame_number] = result
     
     for detector in detectors:
         detector.join()
-    
-    cap.release()
 
-    save_video(writer, results)
+    save_video(writer, frames)
+
+    cap.release()
+    writer.release()
 
     end = time.perf_counter()
     print(f"実行時間: {end - start:.2f}s")
