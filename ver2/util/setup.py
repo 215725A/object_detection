@@ -36,8 +36,9 @@ def set_up_cap(video_path):
 def set_up_queue():
     frame_queue = Queue()
     result_queue = Queue()
+    log_queue = Queue()
 
-    return frame_queue, result_queue
+    return frame_queue, result_queue, log_queue
 
 
 def set_up_writer(cap, output_path):
@@ -49,7 +50,7 @@ def set_up_writer(cap, output_path):
     
     return writer
 
-def set_up_logger(log_path):
+def set_up_logger(log_path, log_queue):
     # Get Date
     now = datetime.now().strftime("%Y-%m-%d")
 
@@ -60,6 +61,7 @@ def set_up_logger(log_path):
     log_dir = os.path.dirname(log_path)
     os.makedirs(log_dir, exist_ok=True)
 
-    logger = Logger(log_path).get_logger()
+    # logger = Logger(log_path).get_logger()
+    logger_manager = Logger(log_path, log_queue)
 
-    return logger
+    return logger_manager
