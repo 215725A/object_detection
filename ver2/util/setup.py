@@ -2,10 +2,13 @@
 import cv2
 
 # Standard Packages
+import os
 from multiprocessing import Queue
+from datetime import datetime
 
 # Original Sources
 from .yaml import read
+from .log import Logger
 
 def load_settings(config_path):
     config = read(config_path)
@@ -13,8 +16,9 @@ def load_settings(config_path):
     video_path = config['video_path']
     output_path = config['video_output_path']
     process_num = config['process_num']
+    log_path = config['log_path']
 
-    return model_path, video_path, output_path, process_num
+    return model_path, video_path, output_path, process_num, log_path
 
 
 def set_up_cap(video_path):
@@ -44,3 +48,18 @@ def set_up_writer(cap, output_path):
     writer = cv2.VideoWriter(output_path, fourcc, fps, (cap_width, cap_height))
     
     return writer
+
+def set_up_logger(log_path):
+    # Get Date
+    now = datetime.now().strftime("%Y-%m-%d")
+
+    # Logfile Setting
+    log_path = log_path.format(date=now)
+    
+    # Create Log Directory
+    log_dir = os.path.dirname(log_path)
+    os.makedirs(log_dir, exist_ok=True)
+
+    logger = Logger(log_path).get_logger()
+
+    return logger

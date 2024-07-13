@@ -6,3 +6,4 @@ data/
 memo/
 outputs/
 ver2/config/*.yml
+*.log

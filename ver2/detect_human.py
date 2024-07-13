@@ -1,14 +1,15 @@
-# Installed Libraries
+# Installed Packages
 import cv2
 
-# Standard Libraries
+# Standard Packages
 import argparse
 import time
+import datetime
 from multiprocessing import Process, Queue
 
 # Original Sources
 import util.app as app
-from util.setup import load_settings, set_up_cap, set_up_queue, set_up_writer
+from util.setup import load_settings, set_up_cap, set_up_queue, set_up_writer, set_up_logger
 
 
 def process_detector(frame_queue, result_queue, model_path):
@@ -31,12 +32,16 @@ def main(config_path):
     start = time.perf_counter()
 
     # Load Settings
-    model_path, video_path, output_path, process_num = load_settings(config_path)
+    model_path, video_path, output_path, process_num, log_path = load_settings(config_path)
 
     # Setup
     cap = set_up_cap(video_path)
     frame_queue, result_queue = set_up_queue()
     writer = set_up_writer(cap, output_path)
+    logger = set_up_logger(log_path)
+
+    # Test Logging
+    logger.info("Hello, World!")
 
     # Setup Workers
     detectors = [

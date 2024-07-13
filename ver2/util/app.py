@@ -1,6 +1,7 @@
 # Installed Libraries
 import cv2
 from ultralytics import YOLO
+from motpy import Detection, MultiObjectTracker
 
 class VideoDetector:
     def __init__(self, model_path):
