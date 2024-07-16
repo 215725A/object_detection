@@ -14,7 +14,7 @@ class VideoDetector:
             boxes = detected[0].boxes
             human_count = 0
 
-            self.logger.info(boxes)
+            self.logger.info(detected)
 
             for box in boxes:
                 cls = box.cls
