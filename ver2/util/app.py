@@ -1,16 +1,20 @@
 # Installed Libraries
 import cv2
 from ultralytics import YOLO
+from motpy import Detection, MultiObjectTracker
 
 class VideoDetector:
-    def __init__(self, model_path):
+    def __init__(self, model_path, logger):
         self.model = YOLO(model_path)
+        self.logger = logger
     
     def detectHuman(self, frame):
         try:
             detected = self.model(frame)
             boxes = detected[0].boxes
             human_count = 0
+
+            self.logger.info(detected)
 
             for box in boxes:
                 cls = box.cls
