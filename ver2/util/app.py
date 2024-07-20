@@ -7,38 +7,41 @@ class VideoDetector:
     def __init__(self, model_path, logger):
         self.model = YOLO(model_path)
         self.logger = logger
+        self.detcection_targets = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck']
     
     def detectHuman(self, frame):
         try:
             detected = self.model(frame)
             boxes = detected[0].boxes
-            human_count = 0
+            target_count = {'person': 0, 'bicycle': 0, 'car': 0, 'motorcycle': 0, 'bus': 0, 'truck': 0}
 
-            self.logger.info(detected)
+            # self.logger.info(detected)
 
             for box in boxes:
                 cls = box.cls
                 conf = box.conf
                 xyxy = box.xyxy
 
-                if self.model.names[int(cls)] == 'person' and conf >= 0.5:
-                    frame = self.drawRectAngle(frame, conf, xyxy)
-                    human_count += 1
+                target_name = self.model.names[int(cls)]
+
+                if target_name in self.detcection_targets and conf >= 0.5:
+                    frame = self.drawRectAngle(frame, xyxy)
+                    target_count[target_name] += 1
+                    self.logger.info([target_name, conf])
+
             
-            frame = self.drawInfo(frame, human_count)
+            frame = self.drawInfo(frame, target_count)
 
             return frame
 
         except cv2.error as e:
             print(e)
     
-    def drawRectAngle(self, frame, conf, xyxy):
-        for _xyxy, _conf in zip(xyxy, conf):
+    def drawRectAngle(self, frame, xyxy):
+        for _xyxy in xyxy:
             x1, y1, x2, y2 = map(int, _xyxy)
-            label = f'person: {_conf:.2f}'
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv2.putText(frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
             center = ((x1+x2) // 2, (y1+y2) // 2)
             frame = self.drawCenterPoint(frame, center)
@@ -50,8 +53,11 @@ class VideoDetector:
         
         return frame
 
-    def drawInfo(self, frame, human_count):
-        text = f"Human: {human_count}"
-        cv2.putText(frame, text, (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    def drawInfo(self, frame, target_count):
+        for i, (target, count) in enumerate(target_count.items()):
+            text = f"{target.capitalize()}: {count}"
+            cv2.putText(frame, text, (50, 100 + i * 22), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1)
+
+        # cv2.putText(frame, text, (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
         return frame
