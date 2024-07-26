@@ -2,18 +2,21 @@
 import cv2
 from ultralytics import YOLO
 from motpy import Detection
+import torch
 
 # Original Sources
 
 class VideoDetector:
     def __init__(self, model_path, logger):
-        self.model = YOLO(model_path)
+        self.model = YOLO(model_path).to('cuda')
         self.logger = logger
         self.detcection_targets = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck']
     
     def detectHuman(self, frame):
         try:
-            detected = self.model(frame)
+            with torch.no_grad():
+                detected = self.model(frame)
+            
             boxes = detected[0].boxes
             target_count = {'person': 0, 'bicycle': 0, 'car': 0, 'motorcycle': 0, 'bus': 0, 'truck': 0}
             detections = []
