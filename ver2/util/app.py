@@ -8,7 +8,10 @@ import torch
 
 class VideoDetector:
     def __init__(self, model_path, logger):
-        self.model = YOLO(model_path).to('cuda')
+        if torch.cuda.is_available():
+            self.model = YOLO(model_path).to('cuda')
+        else:
+            self.model = YOLO(model_path)
         self.logger = logger
         self.detcection_targets = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck']
     

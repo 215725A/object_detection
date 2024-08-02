@@ -10,3 +10,4 @@ memo/
 ver2/outputs/*.mp4
 ver2/config/*.yml
 *.log
+.DS_Store

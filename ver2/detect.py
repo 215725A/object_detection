@@ -96,7 +96,7 @@ def main(config_path):
             color = tracker.get_color(track_id)
 
             frame = app.VideoDetector.drawRectAngle(frame, color, xyxy)
-            frame = app.VideoDetector.drawTrackID(frame, track_id, xyxy)
+            # frame = app.VideoDetector.drawTrackID(frame, track_id, xyxy)
             frame = app.VideoDetector.drawInfo(frame, target_count)
         frames[frame_number] = frame
     
