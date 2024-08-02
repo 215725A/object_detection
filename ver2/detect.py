@@ -1,10 +1,12 @@
 # Installed Packages
 import cv2
+import torch
 
 # Standard Packages
 import argparse
 import time
 import logging
+import gc
 from logging.handlers import QueueHandler
 from multiprocessing import Process
 
@@ -26,8 +28,17 @@ def process_detector(frame_queue, result_queue, model_path, log_queue):
         if frame is None:
             break
 
-        detections, target_count = detector.detectHuman(frame)
+        try:
+            with torch.no_grad():
+                detections, target_count = detector.detectHuman(frame)
+        except RuntimeError as e:
+            logger.error(f"RuntimeError: {e}")
+            continue
+        
         result_queue.put((frame_number, frame, detections, target_count)) 
+        
+        torch.cuda.empty_cache()
+        gc.collect()
 
 def save_video(writer, results):
     if results:
