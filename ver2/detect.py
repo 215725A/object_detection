@@ -12,6 +12,7 @@ from multiprocessing import Process
 
 # Original Sources
 import util.app as app
+import util.area as area
 from util.setup import load_settings, set_up_cap, set_up_queue, set_up_writer, set_up_logger
 from util.mot import MOT
 
@@ -64,6 +65,11 @@ def main(config_path):
     logger_manager = set_up_logger(log_path, log_queue)
     logger_manager.setup_logger()
     logger_manager.start_listener()
+
+    # Calculate Area
+    _, frame = cap.read()
+    area_manager = area.Area(frame)
+    area_manager.drawAreaAndCalcArea()
 
     # Setup Workers
     detectors = [

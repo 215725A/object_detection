@@ -20,7 +20,7 @@ class MOT:
             # Generate Random Color
             self.colors[track_id] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         
-        return self.coloers[track_id]
+        return self.colors[track_id]
     
     def convert_to_cpu(self, detections):
         cpu_detections = []
