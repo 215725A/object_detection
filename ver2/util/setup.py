@@ -46,6 +46,8 @@ def set_up_writer(cap, output_path):
     cap_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    output_dir = os.path.dirname(output_path)
+    os.makedirs(output_dir, exist_ok=True)
     writer = cv2.VideoWriter(output_path, fourcc, fps, (cap_width, cap_height))
     
     return writer

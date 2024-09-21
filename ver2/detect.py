@@ -70,60 +70,62 @@ def main(config_path):
     _, frame = cap.read()
     area_manager = area.Area(frame)
     area_manager.drawAreaAndCalcArea()
+    area_manager.applyProjectiveTransform()
+    area_manager.checkLineLength()
 
     # Setup Workers
-    detectors = [
-        Process(target=process_detector, args=(frame_queue, result_queue, model_path, log_queue))
-        for _ in range(process_num)
-    ]
+    # detectors = [
+    #     Process(target=process_detector, args=(frame_queue, result_queue, model_path, log_queue))
+    #     for _ in range(process_num)
+    # ]
 
-    for detector in detectors:
-        detector.start()
+    # for detector in detectors:
+    #     detector.start()
     
-    frame_number = 0
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frame_queue.put((frame_number, frame))
-        frame_number += 1
+    # frame_number = 0
+    # while cap.isOpened():
+    #     ret, frame = cap.read()
+    #     if not ret:
+    #         break
+    #     frame_queue.put((frame_number, frame))
+    #     frame_number += 1
     
-    for _ in detectors:
-        frame_queue.put((None, None))
+    # for _ in detectors:
+    #     frame_queue.put((None, None))
     
-    frames = [None] * frame_number
-    for _ in range(frame_number):
-        frame_number, frame, detections, target_count = result_queue.get()
-        tracks = tracker.update(detections)
+    # frames = [None] * frame_number
+    # for _ in range(frame_number):
+    #     frame_number, frame, detections, target_count = result_queue.get()
+    #     tracks = tracker.update(detections)
 
-        for track in tracks:
-            track_id = track.id
-            xyxy = track.box
-            color = tracker.get_color(track_id)
+    #     for track in tracks:
+    #         track_id = track.id
+    #         xyxy = track.box
+    #         color = tracker.get_color(track_id)
 
-            frame = app.VideoDetector.drawRectAngle(frame, color, xyxy)
-            # frame = app.VideoDetector.drawTrackID(frame, track_id, xyxy)
-            frame = app.VideoDetector.drawInfo(frame, target_count)
-        frames[frame_number] = frame
+    #         frame = app.VideoDetector.drawRectAngle(frame, color, xyxy)
+    #         # frame = app.VideoDetector.drawTrackID(frame, track_id, xyxy)
+    #         frame = app.VideoDetector.drawInfo(frame, target_count)
+    #     frames[frame_number] = frame
     
     cap.release()
 
-    for detector in detectors:
-        detector.join()
+    # for detector in detectors:
+    #     detector.join()
 
-    save_video(writer, frames)
+    # save_video(writer, frames)
 
-    writer.release()
+    # writer.release()
 
-    logger = logging.getLogger()
-    logger.addHandler(QueueHandler(log_queue))
-    logger.setLevel(logging.DEBUG)
-    logger.warning("All process finished!")
+    # logger = logging.getLogger()
+    # logger.addHandler(QueueHandler(log_queue))
+    # logger.setLevel(logging.DEBUG)
+    # logger.warning("All process finished!")
 
-    logger_manager.stop_listener()
+    # logger_manager.stop_listener()
 
-    end = time.perf_counter()
-    print(f"実行時間: {end - start:.2f}s")
+    # end = time.perf_counter()
+    # print(f"実行時間: {end - start:.2f}s")
 
 
 if __name__ == '__main__':

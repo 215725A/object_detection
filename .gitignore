@@ -7,7 +7,7 @@ ver2/data/*.avi
 ver2/data/*.png
 ver2/data/*.mp4
 memo/
-ver2/outputs/*.mp4
-ver2/config/*.yml
+ver2/outputs/
+ver2/config/
 *.log
 .DS_Store
