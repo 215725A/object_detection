@@ -8,11 +8,13 @@ ver2/pts/*.pt
 ver2/data/*.avi
 ver2/data/*.png
 ver2/data/*.mp4
-ver2/outputs/*.mp4
+ver2/outputs/*
 ver2/config/*.yml
+!ver2/config/template.yml
 single_process/pts/*.pt
 single_process/data/*.avi
 single_process/data/*.png
 single_process/data/*.mp4
-single_process/outputs/*.mp4
+single_process/outputs/*
 single_process/config/*.yml
+!single_process/config/template.yml
