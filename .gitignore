@@ -18,3 +18,4 @@ single_process/data/*.mp4
 single_process/outputs/*
 single_process/config/*.yml
 !single_process/config/template.yml
+varification
