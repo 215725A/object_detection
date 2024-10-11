@@ -51,7 +51,12 @@ def main(config_path):
     start = time.perf_counter()
 
     # Load Settings
-    model_path, video_path, output_path, process_num, log_path = load_settings(config_path)
+    config = load_settings(config_path)
+    model_path = config['model']
+    video_path = config['video_path']
+    output_path = config['video_output_path']
+    log_path = config['log_path']
+    process_num = config['process_num']
 
     # Setup
     cap = set_up_cap(video_path)
@@ -65,11 +70,6 @@ def main(config_path):
     logger_manager = set_up_logger(log_path, log_queue)
     logger_manager.setup_logger()
     logger_manager.start_listener()
-
-    # Calculate Area
-    _, frame = cap.read()
-    area_manager = area.Area(frame)
-    area_manager.drawAreaAndCalcArea()
 
     # Setup Workers
     detectors = [

@@ -13,7 +13,7 @@ class Area:
             "point_num": self.point_num
         }
     
-    def drawAreaAndCalcArea(self):
+    def drawArea(self):
         if self.img is None:
             print("Error: Image not loaded properly.")
             return
@@ -40,8 +40,7 @@ class Area:
                 else:
                     print("Please select exactly 4 points before pressing Enter.")
 
-        area = self.calcArea()
-        return area
+        return display_img
 
     def onMouse(self, event, x, y, flags, params):
         point_list = params['point_list']

@@ -8,7 +8,8 @@ ver2/pts/*.pt
 ver2/data/*.avi
 ver2/data/*.png
 ver2/data/*.mp4
-ver2/outputs/*
+ver2/outputs/movies/*.mp4
+ver2/outputs/csv/*.csv
 ver2/config/*.yml
 ver2/envs/.env
 !ver2/config/template.yml

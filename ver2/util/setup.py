@@ -12,13 +12,8 @@ from .log import Logger
 
 def load_settings(config_path):
     config = read(config_path)
-    model_path = config['model']
-    video_path = config['video_path']
-    output_path = config['video_output_path']
-    process_num = config['process_num']
-    log_path = config['log_path']
 
-    return model_path, video_path, output_path, process_num, log_path
+    return config
 
 
 def set_up_cap(video_path):
@@ -42,6 +37,9 @@ def set_up_queue():
 
 
 def set_up_writer(cap, output_path):
+    output_dir = os.path.dirname(output_path)
+    os.makedirs(output_dir, exist_ok=True)
+
     cap_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     cap_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -50,7 +48,7 @@ def set_up_writer(cap, output_path):
     
     return writer
 
-def set_up_logger(log_path, log_queue):
+def set_up_logger(log_path, log_queue=None):
     # Get Date
     now = datetime.now().strftime("%Y-%m-%d")
 
@@ -65,3 +63,7 @@ def set_up_logger(log_path, log_queue):
     logger_manager = Logger(log_path, log_queue)
 
     return logger_manager
+
+def set_up_csv(csv_path):
+    csv_dir = os.path.dirname(csv_path)
+    os.makedirs(csv_dir, exist_ok=True)
