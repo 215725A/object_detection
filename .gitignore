@@ -10,6 +10,7 @@ ver2/data/*.png
 ver2/data/*.mp4
 ver2/outputs/*
 ver2/config/*.yml
+ver2/envs/.env
 !ver2/config/template.yml
 single_process/pts/*.pt
 single_process/data/*.avi
