@@ -73,7 +73,7 @@ class Area:
         x_left = selected_points[1][0]
         x_right = selected_points[2][0]
 
-        road_points_2 = np.array([(x_left, target_points[0]), (x_left, 0), (x_right, 0), (x_right, target_points[1])], dtype=np.float32)
+        road_points_2 = np.array([(x_left, target_points[0]), (x_left, 0), (x_right + target_points[1], 0), (x_right + target_points[1], target_points[0])], dtype=np.float32)
 
         M = cv2.getPerspectiveTransform(road_points_1, road_points_2)
         np.set_printoptions(precision=5, suppress=True)
