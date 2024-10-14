@@ -8,9 +8,8 @@ import time
 import sys
 
 # Original Sources
-import util.app as app
 import util.area as area
-from util.setup import load_settings, set_up_cap, set_up_logger, set_up_csv
+from util.setup import load_settings, set_up_cap, set_up_csv
 
 
 def main(config_path):
@@ -27,8 +26,7 @@ def main(config_path):
 
   ret, frame = cap.read()
   if not ret:
-    print("Frame could not be loaded successfully.")
-    sys.exit(1)
+    raise Exception("Frame could not be loaded successfully.")
   
   area_manager = area.Area(frame)
 

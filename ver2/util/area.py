@@ -1,9 +1,10 @@
 import cv2
+import numpy as np
 
 class Area:
     def __init__(self, frame):
         self.img = frame
-        self.wname = "Select Load Points"
+        self.wname = "Select Road Points"
         self.point_list = []
         self.point_num = 4
         self.params = {
@@ -65,3 +66,22 @@ class Area:
             area -= self.point_list[j][0] * self.point_list[i][1]
         area = abs(area) / 2.0
         return area
+    
+    def applyProjectiveTransform(self, target_points, selected_points):
+        road_points_1 = np.array(selected_points, dtype=np.float32)
+
+        x_left = selected_points[1][0]
+        x_right = selected_points[2][0]
+
+        road_points_2 = np.array([(x_left, target_points[0]), (x_left, 0), (x_right + target_points[1], 0), (x_right + target_points[1], target_points[0])], dtype=np.float32)
+
+        M = cv2.getPerspectiveTransform(road_points_1, road_points_2)
+        np.set_printoptions(precision=5, suppress=True)
+
+        img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
+        w, h = road_points_2.max(axis=0).astype(int) + 50
+        self.convert_img = cv2.warpPerspective(img, M, (w, h))
+
+        cv2.imshow('Convert Image', self.convert_img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
