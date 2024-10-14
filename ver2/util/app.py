@@ -1,89 +1,86 @@
-# Installed Libraly
+# Installed Packages
 import cv2
 from ultralytics import YOLO
+from motpy import Detection
+import torch
 
-# Self-made Libraly
-from . import yaml
+# Original Sources
 
 class VideoDetector:
-    def __init__(self):
-        self.cneter_points = []
-
-    def setupVideoCapture(self):
-        video_path = self.config['video_path']
-        self.cap = cv2.VideoCapture(video_path)
-        if not self.cap.isOpened():
-            raise ValueError("""
-                             VideoCapture not opened. \n
-                             Check if the 'movie_path' is correct and ffmpeg or gstreamer is properly installed.
-                            """
-            )
-        self.cap_witdh = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.cap_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+    def __init__(self, model_path, logger):
+        if torch.cuda.is_available():
+            self.model = YOLO(model_path).to('cuda')
+        else:
+            self.model = YOLO(model_path)
+        self.logger = logger
+        self.detcection_targets = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck']
     
-    def setupVideoWriter(self):
-        output_path = self.config['video_output_path']
-        self.fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        self.writer = cv2.VideoWriter(output_path, self.fourcc, self.fps, (self.cap_witdh, self.cap_height))
-    
-    def setupModel(self):
-        model = self.config['model']
-        self.model = YOLO(model)
-
-    def release(self):
-        self.writer.release()
-        self.cap.release()
-        cv2.destroyAllWindows()
-
-    def detectHumanBody(self):
+    def detectHuman(self, frame):
         try:
-            while self.cap.isOpened():
-                ret, self.frame = self.cap.read()
+            with torch.no_grad():
+                detected = self.model(frame)
+            
+            boxes = detected[0].boxes
+            target_count = {'person': 0, 'bicycle': 0, 'car': 0, 'motorcycle': 0, 'bus': 0, 'truck': 0}
+            detections = []
 
-                if not ret:
-                    break
+            # self.logger.info(detected)
 
-                detected = self.model(self.frame)
-                boxes = detected[0].boxes
+            for box in boxes:
+                cls = box.cls
+                conf = box.conf
+                xyxy = box.xyxy[0]
 
-                for box in boxes:
-                    cls = box.cls
-                    conf = box.conf
-                    xyxy = box.xyxy
-                
-                    if self.model.names[int(cls)] == 'person' and conf >= 0.5:
-                        self.drawRectAngle(conf, xyxy)
+                target_name = self.model.names[int(cls)]
 
-                self.saveVideo(self.frame)
+                if target_name in self.detcection_targets and conf >= 0.5:
+                    # frame = self.drawRectAngle(frame, xyxy)
+                    x1, y1, x2, y2 = xyxy
+                    bbox = list(map(float, (x1, y1, x2, y2)))
+                    detection = Detection(box=bbox, score=conf)
+                    detections.append(detection)
+
+                    target_count[target_name] += 1
+                    self.logger.info([target_name, conf])
+
+            # frame = self.drawInfo(frame, target_count)
+
+            return detections, target_count
 
         except cv2.error as e:
             print(e)
-        
-        self.release()
-
-    def drawRectAngle(self, conf, xyxy):
-        for _xyxy, _conf in zip(xyxy, conf):
-            x1, y1, x2, y2 = map(int, _xyxy)
-            label = f'person: {_conf:.2f}'
-            cv2.rectangle(self.frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv2.putText(self.frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            center_x = (x1 + x2) // 2
-            center_y = (y1 + y2) // 2
-            # self.drawCenterPoint(center_x, center_y)
-            self.drawObit((center_x, center_y))
-
-    # def drawCenterPoint(self, center_x, center_y):
-    #     cv2.circle(self.frame, (center_x, center_y), 2, (0, 255, 0), 3)
     
-    def drawObit(self, new_center_point):
-        self.cneter_points.append(new_center_point)
-        for points in self.cneter_points:
-            cv2.circle(self.frame, points, 2, (0, 255, 0), 3)
+    @classmethod
+    def drawInfo(cls, frame, target_count):
+        for i, (target, count) in enumerate(target_count.items()):
+            text = f"{target.capitalize()}: {count}"
+            cv2.putText(frame, text, (50, 100 + i * 22), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1)
 
-    def saveVideo(self, frame):
-        self.writer.write(frame)
+        # cv2.putText(frame, text, (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
-    def roadConfigFile(self, file_path):
-        config_path = f'{file_path}'
-        self.config = yaml.read(config_path)
+        return frame
+    
+    @classmethod
+    def drawRectAngle(cls, frame, color, xyxy):
+        # for _xyxy in xyxy:
+        x1, y1, x2, y2 = map(int, xyxy)
+
+        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+
+        center = ((x1+x2) // 2, (y1+y2) // 2)
+        frame = cls.drawCenterPoint(frame, center)
+
+        return frame
+
+    @classmethod
+    def drawCenterPoint(cls, frame, center):
+        frame = cv2.circle(frame, center, 2, (0, 255, 0), 3)
+        
+        return frame
+
+    @classmethod
+    def drawTrackID(cls, frame, track_id, xyxy):
+        x1, y1, _, _ = map(int, xyxy)
+        frame = cv2.putText(frame, f'ID: {track_id}', (x1, (y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 2)
+
+        return frame

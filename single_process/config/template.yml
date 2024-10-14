@@ -8,6 +8,3 @@ video_output_path: # 出力先のパス
 # About Logs
 log_path: # log/分析対象/**_log_{date}.log
 # ex. log_path: log/shopping_center/sc_log_{date}.log
-
-# About process
-process_num: # プロセス数
