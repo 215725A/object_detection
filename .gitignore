@@ -2,6 +2,7 @@ __pycache__/
 .vscode/
 /src/
 memo/
+img/
 *.log
 .DS_Store
 ver2/pts/*.pt
