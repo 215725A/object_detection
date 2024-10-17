@@ -69,11 +69,6 @@ class VideoDetector:
 
             total_area *= vertical_ratio * horizontal_ratio
             congestion_rate = (total_area / self.expect_area) * 100
-            print("----------------")
-            print(total_area)
-            print(self.expect_area)
-            print(congestion_rate)
-            print("----------------")
 
             return detections, target_count, congestion_rate
 
