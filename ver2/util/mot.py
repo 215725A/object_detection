@@ -7,7 +7,7 @@ import random
 
 class MOT:
     def __init__(self, dt=0.1):
-        self.tracker = MultiObjectTracker(dt=dt, tracker_kwargs={'max_staleness': 60})
+        self.tracker = MultiObjectTracker(dt=dt, tracker_kwargs={'max_staleness': 30})
         self.colors = {}
     
     def update(self, detections):

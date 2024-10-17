@@ -64,6 +64,11 @@ def set_up_logger(log_path, log_queue=None):
 
     return logger_manager
 
-def set_up_csv(csv_path):
+def set_up_csv(csv_paths):
+    for csv_path in csv_paths:
+        csv_dir = os.path.dirname(csv_path)
+        os.makedirs(csv_dir, exist_ok=True)
+
+def set_up_csv_one_path(csv_path):
     csv_dir = os.path.dirname(csv_path)
     os.makedirs(csv_dir, exist_ok=True)
