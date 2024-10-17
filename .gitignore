@@ -10,9 +10,9 @@ ver2/data/*.avi
 ver2/data/*.png
 ver2/data/*.mp4
 ver2/outputs/movies/yolo/*/*/*.mp4
-ver2/outputs/csv/*.csv
+ver2/outputs/csv/*/*/*/*.csv
 ver2/config/*.yml
-ver2/envs/.env
+ver2/.env
 !ver2/config/template.yml
 single_process/pts/*.pt
 single_process/data/*.avi

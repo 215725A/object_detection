@@ -57,23 +57,22 @@ class Area:
             if len(point_list) > 0:
                 point_list.pop(-1)
 
-    def calcArea(self):
-        n = len(self.point_list)
+    def calcArea(self, expect_distances):
+        n = len(expect_distances)
         area = 0.0
         for i in range(n):
             j = (i + 1) % n
-            area += self.point_list[i][0] * self.point_list[j][1]
-            area -= self.point_list[j][0] * self.point_list[i][1]
+            area += expect_distances[i][0] * expect_distances[j][1]
+            area -= expect_distances[j][0] * expect_distances[i][1]
         area = abs(area) / 2.0
         return area
     
     def applyProjectiveTransform(self, target_points, selected_points):
         road_points_1 = np.array(selected_points, dtype=np.float32)
 
-        x_left = selected_points[1][0]
-        x_right = selected_points[2][0]
+        target_x= min(selected_points, key=lambda x: x[0])[0]
 
-        road_points_2 = np.array([(x_left, target_points[0]), (x_left, 0), (x_right + target_points[1], 0), (x_right + target_points[1], target_points[0])], dtype=np.float32)
+        road_points_2 = np.array([(target_x, target_points[0]), (target_x, 0), (target_points[1], 0), (target_points[1], target_points[0])], dtype=np.float32)
 
         M = cv2.getPerspectiveTransform(road_points_1, road_points_2)
         np.set_printoptions(precision=5, suppress=True)
@@ -85,3 +84,20 @@ class Area:
         cv2.imshow('Convert Image', self.convert_img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+        return road_points_2
+
+    def calcAspectRatio(self, expect_distances):
+        expect_vertical, expect_horizontal = expect_distances
+        min_x = min(self.point_list, key=lambda x: x[0])[0]
+        max_x = max(self.point_list, key=lambda x: x[0])[0]
+        x_length_data = max_x - min_x
+
+        min_y = min(self.point_list, key=lambda x: x[1])[1]
+        max_y = max(self.point_list, key=lambda x: x[1])[1]
+        y_length_data = max_y - min_y
+
+        x_ratio = expect_horizontal / x_length_data
+        y_ratio = expect_vertical / y_length_data
+
+        return [x_ratio, y_ratio]

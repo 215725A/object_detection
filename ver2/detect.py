@@ -15,14 +15,24 @@ import util.app as app
 import util.area as area
 from util.setup import load_settings, set_up_cap, set_up_queue, set_up_writer, set_up_logger
 from util.mot import MOT
+from util.csv import load_target_csv, load_ratio_csv, load_expect_area_csv
 
 
-def process_detector(frame_queue, result_queue, model_path, log_queue):
+def process_detector(**option):
+    frame_queue = option['frame_queue']
+    result_queue = option['result_queue']
+    model_path = option['model_path']
+    log_queue = option['log_queue']
+    target_area_points = option['target_area_points']
+    aspect_ratio = option['aspect_ratio']
+    expect_area = option['expect_area']
+
     logger = logging.getLogger()
     logger.addHandler(QueueHandler(log_queue))
     logger.setLevel(logging.DEBUG)
 
-    detector = app.VideoDetector(model_path, logger)
+    detector = app.VideoDetector(model_path, logger, expect_area, aspect_ratio)
+    detector.setPolygon(target_area_points)
 
     while True:
         frame_number, frame = frame_queue.get()
@@ -31,12 +41,12 @@ def process_detector(frame_queue, result_queue, model_path, log_queue):
 
         try:
             with torch.no_grad():
-                detections, target_count = detector.detectHuman(frame)
+                detections, target_count, congestion_rate = detector.detectObject(frame)
         except RuntimeError as e:
             logger.error(f"RuntimeError: {e}")
             continue
         
-        result_queue.put((frame_number, frame, detections, target_count)) 
+        result_queue.put((frame_number, frame, detections, target_count, congestion_rate)) 
         
         torch.cuda.empty_cache()
         gc.collect()
@@ -57,11 +67,17 @@ def main(config_path):
     output_path = config['video_output_path']
     log_path = config['log_path']
     process_num = config['process_num']
+    target_area_points_path = config['target_area_points_output_path']
+    aspect_ratio_path = config['aspect_ratio_output_path']
+    expect_area_path = config['expect_area_output_path']
 
     # Setup
     cap = set_up_cap(video_path)
     frame_queue, result_queue, log_queue = set_up_queue()
     writer = set_up_writer(cap, output_path)
+    target_area_points = load_target_csv(target_area_points_path)
+    aspect_ratio = load_ratio_csv(aspect_ratio_path)
+    expect_area = load_expect_area_csv(expect_area_path)
 
     # Setup Multi Object Tracker
     tracker = MOT(dt=0.1)
@@ -71,9 +87,19 @@ def main(config_path):
     logger_manager.setup_logger()
     logger_manager.start_listener()
 
+    option = {
+        "frame_queue": frame_queue, 
+        "result_queue": result_queue, 
+        "model_path": model_path, 
+        "log_queue": log_queue,
+        "target_area_points": target_area_points,
+        "aspect_ratio": aspect_ratio,
+        "expect_area": expect_area
+    }
+
     # Setup Workers
     detectors = [
-        Process(target=process_detector, args=(frame_queue, result_queue, model_path, log_queue))
+        Process(target=process_detector, kwargs=(option))
         for _ in range(process_num)
     ]
 
@@ -93,7 +119,7 @@ def main(config_path):
     
     frames = [None] * frame_number
     for _ in range(frame_number):
-        frame_number, frame, detections, target_count = result_queue.get()
+        frame_number, frame, detections, target_count, congestion_rate = result_queue.get()
         tracks = tracker.update(detections)
 
         for track in tracks:
