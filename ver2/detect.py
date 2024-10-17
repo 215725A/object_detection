@@ -1,6 +1,6 @@
 # Installed Packages
-import cv2
 import torch
+import numpy as np
 
 # Standard Packages
 import argparse
@@ -12,8 +12,7 @@ from multiprocessing import Process
 
 # Original Sources
 import util.app as app
-import util.area as area
-from util.setup import load_settings, set_up_cap, set_up_queue, set_up_writer, set_up_logger
+from util.setup import load_settings, set_up_cap, set_up_queue, set_up_writer, set_up_logger, set_up_csv_one_path
 from util.mot import MOT
 from util.csv import load_target_csv, load_ratio_csv, load_expect_area_csv
 
@@ -70,11 +69,15 @@ def main(config_path):
     target_area_points_path = config['target_area_points_output_path']
     aspect_ratio_path = config['aspect_ratio_output_path']
     expect_area_path = config['expect_area_output_path']
+    congestion_rate_path = config['congestion_rate_output_path']
 
     # Setup
     cap = set_up_cap(video_path)
     frame_queue, result_queue, log_queue = set_up_queue()
     writer = set_up_writer(cap, output_path)
+    set_up_csv_one_path(congestion_rate_path)
+
+    # Load csv Files
     target_area_points = load_target_csv(target_area_points_path)
     aspect_ratio = load_ratio_csv(aspect_ratio_path)
     expect_area = load_expect_area_csv(expect_area_path)
@@ -118,6 +121,7 @@ def main(config_path):
         frame_queue.put((None, None))
     
     frames = [None] * frame_number
+    congestion_rates = [None] * frame_number
     for _ in range(frame_number):
         frame_number, frame, detections, target_count, congestion_rate = result_queue.get()
         tracks = tracker.update(detections)
@@ -131,6 +135,9 @@ def main(config_path):
             # frame = app.VideoDetector.drawTrackID(frame, track_id, xyxy)
             frame = app.VideoDetector.drawInfo(frame, target_count)
         frames[frame_number] = frame
+        congestion_rates[frame_number] = congestion_rate
+    
+    np.savetxt(congestion_rate_path, congestion_rates, delimiter=',', fmt='%.5f')
     
     cap.release()
 

@@ -1,3 +1,4 @@
+#!/bin/bash
 source .env
 
 source ~/.bashrc_conda
