@@ -5,7 +5,6 @@ import numpy as np
 # Standard Packages
 import argparse
 import time
-import sys
 
 # Original Sources
 import util.area as area
@@ -18,9 +17,15 @@ def main(config_path):
   # Load Settings
   config = load_settings(config_path)
   video_path = config['video_path']
-  csv_path = config['target_area_points_output_path']
+  csv_paths = [config['target_area_points_output_path'], config['aspect_ratio_output_path']]
+  expect_vertical = config['projective_transform_point_vertical']
+  expect_horizontal = config['projective_transform_point_horizontal']
+  expect_distances = [expect_vertical, expect_horizontal]
 
-  set_up_csv(csv_path)
+  set_up_csv(csv_paths)
+
+  target_area_points_output_path = config['target_area_points_output_path']
+  aspect_ratio_output_path = config['aspect_ratio_output_path']
 
   cap = set_up_cap(video_path)
 
@@ -36,9 +41,12 @@ def main(config_path):
   cv2.waitKey(0)
   cv2.destroyAllWindows()
 
+  # save csv files
   target_points = np.array(area_manager.point_list)
+  np.savetxt(target_area_points_output_path, target_points, delimiter=',', fmt='%d')
 
-  np.savetxt(csv_path, target_points, delimiter=',', fmt='%d')
+  ratios = area_manager.calcAspectRatio(expect_distances)
+  np.savetxt(aspect_ratio_output_path, ratios, delimiter=',', fmt='%.2f')
 
   cap.release()
 
