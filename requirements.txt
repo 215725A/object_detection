@@ -42,6 +42,7 @@ requests==2.32.3
 scipy==1.13.1
 seaborn==0.13.2
 setuptools==69.5.1
+shapely==2.0.6
 six==1.16.0
 supervision==0.21.0
 sympy==1.12.1
