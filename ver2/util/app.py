@@ -79,10 +79,14 @@ class VideoDetector:
         pass
     
     @classmethod
-    def drawInfo(cls, frame, target_count):
+    def drawInfo(cls, frame, target_count, congestion_rate):
         for i, (target, count) in enumerate(target_count.items()):
             text = f"{target.capitalize()}: {count}"
             cv2.putText(frame, text, (50, 100 + i * 22), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1)
+        
+        x, y = frame.shape[:2]
+        text = f"Congestion Rate: {congestion_rate}"
+        cv2.putText(frame, text, (x-100, y-100), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 1, (255, 255, 0), 1)
 
         return frame
     

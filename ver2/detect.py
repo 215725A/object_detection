@@ -133,7 +133,7 @@ def main(config_path):
 
             frame = app.VideoDetector.drawRectAngle(frame, color, xyxy)
             # frame = app.VideoDetector.drawTrackID(frame, track_id, xyxy)
-            frame = app.VideoDetector.drawInfo(frame, target_count)
+            frame = app.VideoDetector.drawInfo(frame, target_count, congestion_rate)
         frames[frame_number] = frame
         congestion_rates[frame_number] = congestion_rate
     
